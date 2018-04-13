@@ -2,6 +2,10 @@
 #include "auxilary/Cell.h"
 #include <time.h>
 #include <math.h>       /* pow */
+#include <chrono>
+
+#include "../shared/biohazard_adaptor.h"
+#include "../shared/biohazard_interface.h"
 
 GameEngine::GameEngine(QQuickItem *parent) : QQuickItem(parent)
 {
@@ -41,11 +45,11 @@ std::pair<QString, QString> GameEngine::getTaskInfo( QString id )
 
 void GameEngine::initGame( QString argv )
 {
-        if (argv == "create")
-        {
-            m_field.create_dummy_db_table();
-        }
-    // load player names
+//        if (argv == "create")
+//        {
+//            m_field.create_dummy_db_table();
+//        }
+//    // load player names
     m_field.load();
 }
 
@@ -53,7 +57,7 @@ void GameEngine::doTurn()
 {
     for(auto playerName : m_players)
     {
-        QLibrary myLib("./"+playerName);
+        QLibrary myLib("./"+playerName+"/"+playerName);
         myLib.load();
         typedef std::string (*processMethod)(std::string,std::string);
         if(myLib.isLoaded())
@@ -67,20 +71,23 @@ void GameEngine::doTurn()
                     {
                         std::pair<QString,QString> task_arg = getTaskInfo(p_cell_for_turn->m_task_ID);
 
-                        auto start = clock();
-                        auto res = run(p_cell_for_turn->m_task_ID.toStdString(),task_arg.first.toStdString());
-                        auto stop = clock();
-                        // hope that's enough precision
-                        double new_time_score = (double)(stop - start) / CLOCKS_PER_SEC;
-
+                        //auto start = clock();
+                        std::string res;
+                        auto start = std::chrono::system_clock::now();
+                        for(int i = 0; i < 100; i++)
+                        {
+                            res = run(p_cell_for_turn->m_task_ID.toStdString(),task_arg.first.toStdString());
+                        }
+                        auto end = std::chrono::system_clock::now();
+                        std::chrono::duration<double,std::micro> new_time_score = end-start;
                         if(task_arg.second == QString(res.c_str()))
                         {
                             int x = p_cell_for_turn->m_x;
                             int y = p_cell_for_turn->m_y;
                             double old_time_score = m_field.get_score(x, y);
-                            if (old_time_score == -1 || new_time_score < old_time_score)
+                            if (old_time_score == -1 || new_time_score.count() < old_time_score)
                             {
-                                m_field.change_cell(x, y, playerName, new_time_score );
+                                m_field.change_cell(x, y, playerName, new_time_score.count() );
                             }
                         }
                     }
@@ -134,9 +141,26 @@ QString GameEngine::get_cell_task_id(int idx)
 
 void GameEngine::dump_result()
 {
-    QImage dumped(std::move(m_result->image()));
+    QImage dumped(m_result->image());
     dumped.save("./field.png");
-    exit(0);
+
+    QByteArray array;
+    QBuffer buffer(&array);
+    buffer.open(QIODevice::WriteOnly);
+    dumped.save(&buffer, "PNG");
+    buffer.close();
+
+    QString message = array.toBase64();
+
+    new MessageAdaptor(this);
+    QDBusConnection::sessionBus().registerObject("/", this);
+    new org::biohazard::message(QString(), QString(), QDBusConnection::sessionBus(), this);
+
+    QDBusMessage msg = QDBusMessage::createSignal("/", "org.biohazard.message", "message");
+    msg << message;
+    QDBusConnection::sessionBus().send(msg);
+
+    qApp->exit();
 }
 
 std::pair<int, int> GameEngine::get_coordinate_from_id(int id)

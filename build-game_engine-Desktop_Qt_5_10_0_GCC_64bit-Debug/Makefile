@@ -12,10 +12,10 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_QML_DEBUG -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_SQL_LIB -DQT_CORE_LIB
+DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_QML_DEBUG -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_SQL_LIB -DQT_DBUS_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../game_engine -I. -I../../../Qt5.10.0/5.10.0/gcc_64/include -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtQuick -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtGui -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtQml -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtNetwork -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/linux-g++
+INCPATH       = -I../game_engine -I. -I../../../Qt5.10.0/5.10.0/gcc_64/include -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtQuick -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtGui -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtQml -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtNetwork -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus -I../../../Qt5.10.0/5.10.0/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/ant/Qt5.10.0/5.10.0/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -38,7 +38,7 @@ DISTNAME      = game_engine1.0.0
 DISTDIR = /home/ant/BioHazard/BioHazard/build-game_engine-Desktop_Qt_5_10_0_GCC_64bit-Debug/.tmp/game_engine1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/home/ant/Qt5.10.0/5.10.0/gcc_64/lib
-LIBS          = $(SUBLIBS) -L/home/ant/Qt5.10.0/5.10.0/gcc_64/lib -lQt5Quick -lQt5Gui -lQt5Qml -lQt5Network -lQt5Sql -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -L/home/ant/Qt5.10.0/5.10.0/gcc_64/lib -lQt5Quick -lQt5Gui -lQt5Qml -lQt5Network -lQt5Sql -lQt5DBus -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -53,13 +53,22 @@ OBJECTS_DIR   = ./
 SOURCES       = ../game_engine/main.cpp \
 		../game_engine/gameengine.cpp \
 		../game_engine/auxilary/GameField.cpp qrc_qml.cpp \
-		moc_gameengine.cpp
+		moc_gameengine.cpp \
+		message_interface.cpp \
+		message_adaptor.cpp \
+		moc_message_interface.cpp \
+		moc_message_adaptor.cpp
 OBJECTS       = main.o \
 		gameengine.o \
 		GameField.o \
 		qrc_qml.o \
-		moc_gameengine.o
-DIST          = ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/spec_pre.prf \
+		moc_gameengine.o \
+		message_interface.o \
+		message_adaptor.o \
+		moc_message_interface.o \
+		moc_message_adaptor.o
+DIST          = ../shared/org.biohazard.message.xml \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/common/unix.conf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/common/linux.conf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/common/sanitize.conf \
@@ -233,6 +242,9 @@ DIST          = ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/qt.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/resources.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/moc.prf \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbuscommon.pri \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbusinterfaces.prf \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbusadaptors.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/unix/opengl.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/unix/thread.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/qmake_use.prf \
@@ -431,6 +443,9 @@ Makefile: ../game_engine/game_engine.pro ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/qt.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/resources.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/moc.prf \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbuscommon.pri \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbusinterfaces.prf \
+		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbusadaptors.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/unix/opengl.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/unix/thread.prf \
 		../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/qmake_use.prf \
@@ -446,6 +461,7 @@ Makefile: ../game_engine/game_engine.pro ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs
 		../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Qml.prl \
 		../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Network.prl \
 		../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Sql.prl \
+		../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5DBus.prl \
 		../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Core.prl
 	$(QMAKE) -o Makefile ../game_engine/game_engine.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/spec_pre.prf:
@@ -622,6 +638,9 @@ Makefile: ../game_engine/game_engine.pro ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/qt.prf:
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/resources.prf:
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/moc.prf:
+../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbuscommon.pri:
+../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbusinterfaces.prf:
+../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/dbusadaptors.prf:
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/unix/opengl.prf:
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/unix/thread.prf:
 ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/qmake_use.prf:
@@ -637,6 +656,7 @@ Makefile: ../game_engine/game_engine.pro ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs
 ../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Qml.prl:
 ../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Network.prl:
 ../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Sql.prl:
+../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5DBus.prl:
 ../../../Qt5.10.0/5.10.0/gcc_64/lib/libQt5Core.prl:
 qmake: FORCE
 	@$(QMAKE) -o Makefile ../game_engine/game_engine.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
@@ -655,7 +675,13 @@ distdir: FORCE
 	$(COPY_FILE) --parents ../game_engine/qml.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../Qt5.10.0/5.10.0/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../game_engine/gameengine.h ../game_engine/auxilary/Cell.h ../game_engine/auxilary/GameField.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../shared/org.biohazard.message.xml $(DISTDIR)/
+	$(COPY_FILE) --parents ../shared/org.biohazard.message.xml $(DISTDIR)/
 	$(COPY_FILE) --parents ../game_engine/main.cpp ../game_engine/gameengine.cpp ../game_engine/auxilary/GameField.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../shared/org.biohazard.message.xml $(DISTDIR)/
+	$(COPY_FILE) --parents message_interface.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../shared/org.biohazard.message.xml $(DISTDIR)/
+	$(COPY_FILE) --parents message_adaptor.h $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -982,19 +1008,63 @@ moc_gameengine.cpp: ../../../Qt5.10.0/5.10.0/gcc_64/include/QtCore/QObject \
 		../game_engine/gameengine.h \
 		moc_predefs.h \
 		../../../Qt5.10.0/5.10.0/gcc_64/bin/moc
-	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/ant/Qt5.10.0/5.10.0/gcc_64/mkspecs/linux-g++ -I/home/ant/BioHazard/BioHazard/game_engine -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQuick -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtGui -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQml -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtNetwork -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtSql -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../game_engine/gameengine.h -o moc_gameengine.cpp
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/ant/Qt5.10.0/5.10.0/gcc_64/mkspecs/linux-g++ -I/home/ant/BioHazard/BioHazard/game_engine -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQuick -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtGui -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQml -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtNetwork -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtSql -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtDBus -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../game_engine/gameengine.h -o moc_gameengine.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
+compiler_dbus_interface_source_make_all: message_interface.cpp
+compiler_dbus_interface_source_clean:
+	-$(DEL_FILE) message_interface.cpp
+message_interface.cpp: ../shared/org.biohazard.message.xml \
+		../../../Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp \
+		message_interface.h
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp -i message_interface.h -p :message_interface.cpp ../shared/org.biohazard.message.xml
+
+compiler_dbus_adaptor_source_make_all: message_adaptor.cpp
+compiler_dbus_adaptor_source_clean:
+	-$(DEL_FILE) message_adaptor.cpp
+message_adaptor.cpp: ../shared/org.biohazard.message.xml \
+		../../../Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp \
+		message_adaptor.h
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp -i message_adaptor.h -a :message_adaptor.cpp ../shared/org.biohazard.message.xml
+
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
+compiler_dbus_interface_header_make_all: message_interface.h
+compiler_dbus_interface_header_clean:
+	-$(DEL_FILE) message_interface.h
+message_interface.h: ../shared/org.biohazard.message.xml \
+		../../../Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp -p message_interface.h: ../shared/org.biohazard.message.xml
+
+compiler_dbus_interface_moc_make_all: moc_message_interface.cpp
+compiler_dbus_interface_moc_clean:
+	-$(DEL_FILE) moc_message_interface.cpp
+moc_message_interface.cpp: message_interface.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/bin/moc
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/ant/Qt5.10.0/5.10.0/gcc_64/mkspecs/linux-g++ -I/home/ant/BioHazard/BioHazard/game_engine -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQuick -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtGui -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQml -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtNetwork -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtSql -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtDBus -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include message_interface.h -o moc_message_interface.cpp
+
+compiler_dbus_adaptor_header_make_all: message_adaptor.h
+compiler_dbus_adaptor_header_clean:
+	-$(DEL_FILE) message_adaptor.h
+message_adaptor.h: ../shared/org.biohazard.message.xml \
+		../../../Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/qdbusxml2cpp -a message_adaptor.h: ../shared/org.biohazard.message.xml
+
+compiler_dbus_adaptor_moc_make_all: moc_message_adaptor.cpp
+compiler_dbus_adaptor_moc_clean:
+	-$(DEL_FILE) moc_message_adaptor.cpp
+moc_message_adaptor.cpp: message_adaptor.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/bin/moc
+	/home/ant/Qt5.10.0/5.10.0/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/ant/Qt5.10.0/5.10.0/gcc_64/mkspecs/linux-g++ -I/home/ant/BioHazard/BioHazard/game_engine -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQuick -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtGui -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtQml -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtNetwork -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtSql -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtDBus -I/home/ant/Qt5.10.0/5.10.0/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include message_adaptor.h -o moc_message_adaptor.cpp
+
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
 compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean compiler_dbus_interface_source_clean compiler_dbus_adaptor_source_clean compiler_dbus_interface_header_clean compiler_dbus_interface_moc_clean compiler_dbus_adaptor_header_clean compiler_dbus_adaptor_moc_clean 
 
 ####### Compile
 
@@ -1575,7 +1645,33 @@ gameengine.o: ../game_engine/gameengine.cpp ../game_engine/gameengine.h \
 		../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql/qsqlrelationaltablemodel.h \
 		../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql/qsqltablemodel.h \
 		../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql/qsqlresult.h \
-		../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql/qtsqlversion.h
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtSql/qtsqlversion.h \
+		../shared/biohazard_adaptor.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/QtDBus \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/QtDBusDepends \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qtdbusglobal.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusabstractadaptor.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusabstractinterface.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusmessage.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbuserror.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusextratypes.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusconnection.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusargument.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusconnectioninterface.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusreply.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbuspendingreply.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbuspendingcall.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbuscontext.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusinterface.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusmetatype.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusserver.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusservicewatcher.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusunixfiledescriptor.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qdbusvirtualobject.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtDBus/qtdbusversion.h \
+		../shared/biohazard_interface.h \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtCore/QByteArray \
+		../../../Qt5.10.0/5.10.0/gcc_64/include/QtCore/QVariant
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o gameengine.o ../game_engine/gameengine.cpp
 
 GameField.o: ../game_engine/auxilary/GameField.cpp ../game_engine/auxilary/GameField.h \
@@ -1840,6 +1936,18 @@ qrc_qml.o: qrc_qml.cpp
 
 moc_gameengine.o: moc_gameengine.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_gameengine.o moc_gameengine.cpp
+
+message_interface.o: message_interface.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o message_interface.o message_interface.cpp
+
+message_adaptor.o: message_adaptor.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o message_adaptor.o message_adaptor.cpp
+
+moc_message_interface.o: moc_message_interface.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_message_interface.o moc_message_interface.cpp
+
+moc_message_adaptor.o: moc_message_adaptor.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_message_adaptor.o moc_message_adaptor.cpp
 
 ####### Install
 

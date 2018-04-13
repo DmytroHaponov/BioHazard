@@ -1,4 +1,4 @@
-QT += quick sql
+QT += quick sql dbus
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -33,3 +33,10 @@ HEADERS += \
     gameengine.h \
     auxilary/Cell.h \
     auxilary/GameField.h
+
+
+DISTFILES += \
+    ../shared/org.biohazard.message.xml
+
+DBUS_ADAPTORS += ../shared/org.biohazard.message.xml
+DBUS_INTERFACES += ../shared/org.biohazard.message.xml
